@@ -5,6 +5,12 @@
 
 using namespace std;
 
+const int fileHeaderSize = 14;
+const int informationHeaderSize = 40;
+
+unsigned char fileHeader[fileHeaderSize];
+unsigned char informationHeader[informationHeaderSize];
+
 struct RGBColor
 {
 unsigned char B;
@@ -12,10 +18,17 @@ unsigned char G;
 unsigned char R;
 }kolor;
 
+
+
+
  int x, y;
 
 int main(void)
 {
+
+
+
+
 ifstream plik("test.bmp", ios::binary);
 ofstream ofs( "negatyw.bmp", ios::binary );
 
@@ -29,8 +42,76 @@ plik.read((char*)&width, 4);
 plik.read((char*)&height, 4);
 plik.seekg(offset, ios::beg);
 
-ofs.write(( char * ) &width, 4 );
-ofs.write(( char * ) &height, 4 );
+
+const int fileSize = fileHeaderSize + informationHeaderSize + width * height;
+   
+fileHeader[0] = 'B';
+fileHeader[1] = 'M';
+fileHeader[2] = fileSize;
+fileHeader[3] = fileSize >> 8;
+fileHeader[4] = fileSize >> 16;
+fileHeader[5] = fileSize >> 24;
+fileHeader[6] = 0;
+fileHeader[7] = 0;
+fileHeader[8] = 0;
+fileHeader[9] = 0;
+fileHeader[10] = 0;
+fileHeader[11] = 0;
+fileHeader[12] = 0;
+fileHeader[13] = 0;
+
+informationHeader[0] = informationHeaderSize;
+informationHeader[1] = 0;
+informationHeader[2] = 0;
+informationHeader[3] = 0;
+
+informationHeader[4] = width;
+informationHeader[5] = width >> 8;
+informationHeader[6] = width >> 16;
+informationHeader[7] = width >> 24;
+
+informationHeader[8] = height;
+informationHeader[9] = height >> 8;
+informationHeader[10] = height >> 16;
+informationHeader[11] = height >> 24;
+
+informationHeader[12] = 1;
+informationHeader[13] = 0;
+informationHeader[14] = 24;
+informationHeader[15] = 0;
+
+informationHeader[16] = 0;
+informationHeader[17] = 0;
+informationHeader[18] = 0;
+informationHeader[19] = 0;
+
+informationHeader[20] = 0;
+informationHeader[21] = 0;
+informationHeader[22] = 0;
+informationHeader[23] = 0;
+informationHeader[24] = 0;
+informationHeader[25] = 0;
+informationHeader[26] = 0;
+informationHeader[27] = 0;
+informationHeader[28] = 0;
+informationHeader[29] = 0;
+
+informationHeader[30] = 0;
+informationHeader[31] = 0;
+informationHeader[32] = 0;
+informationHeader[33] = 0;
+informationHeader[34] = 0;
+informationHeader[35] = 0;
+informationHeader[36] = 0;
+informationHeader[37] = 0;
+informationHeader[38] = 0;
+informationHeader[39] = 0;
+
+
+// ofs.write(( char * ) &width, 4 );
+// ofs.write(( char * ) &height, 4 );
+ofs.write(reinterpret_cast<char*>(fileHeader), fileHeaderSize);
+ofs.write(reinterpret_cast<char*>(informationHeader), informationHeaderSize);
 
 
 cout << width << endl;
