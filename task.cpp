@@ -1,7 +1,9 @@
 #include <iostream>
 #include <fstream>
 #define OFFSET 10
-#define JUMP 18
+#define JUMPTOWIDTHANDHEIGHT 18
+#define JUMPTOSIZEIMAGE 2
+
 
 using namespace std;
 
@@ -18,7 +20,7 @@ unsigned char G;
 unsigned char R;
 }kolor;
 
- int x, y;
+int x, y;
 
 int main(void)
 {
@@ -26,20 +28,28 @@ int main(void)
 ifstream plik("test.bmp", ios::binary);
 ofstream ofs( "negatyw.bmp", ios::binary );
 
-unsigned int width = 0, height = 0;
+unsigned int width = 0, height = 0, sizeImage = 0;
 short offset = 0;
 unsigned char c;
+
+
 plik.seekg(OFFSET, ios::beg);
 plik.read((char*)&offset, 2);
-plik.seekg(JUMP, ios::beg);	
-plik.read((char*)&width, 4);
-plik.read((char*)&height, 4);
+
+
+plik.seekg(JUMPTOSIZEIMAGE, ios::beg);	
+plik.read((char*)&sizeImage, 4);               // wczytywanie rozmiaru pliku
+
+plik.seekg(JUMPTOWIDTHANDHEIGHT, ios::beg);	
+plik.read((char*)&width, 4);                   // wczytywanie długości mapyBitowej w pixelach
+plik.read((char*)&height, 4);                  // wczytywanie wysokości mapyBitowej w pixelach
+
 plik.seekg(offset, ios::beg);
 
 
 const int fileSize = fileHeaderSize + informationHeaderSize + width * height;
    
-fileHeader[0] = 'B';
+fileHeader[0] = 'B';                         // konieczny zestaw parametrów określający nowy plik
 fileHeader[1] = 'M';
 fileHeader[2] = fileSize;
 fileHeader[3] = fileSize >> 8;
@@ -104,9 +114,12 @@ informationHeader[39] = 0;
 ofs.write(reinterpret_cast<char*>(fileHeader), fileHeaderSize);    //  dane nagłówka nowego pliku
 ofs.write(reinterpret_cast<char*>(informationHeader), informationHeaderSize);   // informacje o nowym pliku
 
+cout << endl;
+cout << "metadane pliku: " <<endl ;
+cout <<"szerokosc pliku wynosi: "<< width << " px" << endl;
+cout <<"wysokosc pliku wynosi " << height << " px" << endl;
+cout <<"rozmiar pliku wynosi " << sizeImage << " bajtow" << endl;
 
-cout << width << endl;
-cout << height << endl;
 
 for(y = 0; y < height; y++ )      // petle wczytujące dany pixel i zmiana na negatyw
     {
@@ -119,9 +132,10 @@ for(y = 0; y < height; y++ )      // petle wczytujące dany pixel i zmiana na ne
           kolor2.G = 255 - kolor.G;
           ofs.write(( char * ) & kolor2, sizeof( RGBColor ) );  // zapis nowej mapy bitowej
         }
-       
-        cout << endl;
     }
+    cout << endl;
+    cout << "utworzono negatyw obrazka" << endl << endl;
+
 
 plik.close();
 ofs.close();
