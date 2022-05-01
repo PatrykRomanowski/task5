@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #define OFFSET 10
-#define BMP_RES 18
+#define JUMP 18
 
 using namespace std;
 
@@ -18,16 +18,10 @@ unsigned char G;
 unsigned char R;
 }kolor;
 
-
-
-
  int x, y;
 
 int main(void)
 {
-
-
-
 
 ifstream plik("test.bmp", ios::binary);
 ofstream ofs( "negatyw.bmp", ios::binary );
@@ -37,7 +31,7 @@ short offset = 0;
 unsigned char c;
 plik.seekg(OFFSET, ios::beg);
 plik.read((char*)&offset, 2);
-plik.seekg(BMP_RES, ios::beg);	
+plik.seekg(JUMP, ios::beg);	
 plik.read((char*)&width, 4);
 plik.read((char*)&height, 4);
 plik.seekg(offset, ios::beg);
@@ -107,45 +101,28 @@ informationHeader[37] = 0;
 informationHeader[38] = 0;
 informationHeader[39] = 0;
 
-
-// ofs.write(( char * ) &width, 4 );
-// ofs.write(( char * ) &height, 4 );
-ofs.write(reinterpret_cast<char*>(fileHeader), fileHeaderSize);
-ofs.write(reinterpret_cast<char*>(informationHeader), informationHeaderSize);
+ofs.write(reinterpret_cast<char*>(fileHeader), fileHeaderSize);    //  dane nagłówka nowego pliku
+ofs.write(reinterpret_cast<char*>(informationHeader), informationHeaderSize);   // informacje o nowym pliku
 
 
 cout << width << endl;
 cout << height << endl;
 
-for(y = 0; y < height; y++ )
+for(y = 0; y < height; y++ )      // petle wczytujące dany pixel i zmiana na negatyw
     {
         for(x = 0; x < width; x++ )
         {
-            plik.read(( char * ) & kolor, sizeof( RGBColor ) );
-          //  cout <<( int ) kolor.R << " " <<( int ) kolor.G << " " <<( int ) kolor.B << ", ";
-            ofs.write(( char * ) & kolor, sizeof( RGBColor ) );
+          plik.read(( char * ) & kolor, sizeof( RGBColor ) );
+          RGBColor kolor2;                     // struktura negatywu
+          kolor2.B = 255 - kolor.B;            // zmiana kolorów na negatyw
+          kolor2.R = 255 - kolor.R;
+          kolor2.G = 255 - kolor.G;
+          ofs.write(( char * ) & kolor2, sizeof( RGBColor ) );  // zapis nowej mapy bitowej
         }
        
         cout << endl;
     }
 
-
-
-
-// int x, y;
-// for(y = 0; y < height; y++)	
-// {
-// 	for(x = 0; x < width; x++)
-// 	{
-// 		plik.read((char*)&kolor, sizeof(RGBColor));
-// 		if(kolor.R == 0 && kolor.G == 0 && kolor.B == 0) cout << "1";
-// 		else if(kolor.R == 255 && kolor.G == 0 && kolor.B == 0) cout << "S";
-// 		else if(kolor.R == 0 && kolor.G == 0 && kolor.B == 255) cout << "T";
-// 		else cout << " ";
-// 	}
-// 	plik.read((char*)&kolor, sizeof(RGBColor));
-// 	cout << endl;
-// }
 plik.close();
 ofs.close();
 
